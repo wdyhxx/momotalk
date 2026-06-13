@@ -1,1 +1,1086 @@
-
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>论坛体编辑器 V1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .floor-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .floor-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #007bff;
+        }
+        
+        .floor-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .floor-item.op {
+            border-left-color: #dc3545;
+        }
+        
+        .floor-item.reply {
+            border-left-color: #28a745;
+        }
+        
+        .floor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .floor-number {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .floor-badge {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+        
+        .badge-op {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .badge-user {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .badge-reply {
+            background: #28a745;
+            color: white;
+        }
+        
+        .floor-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .floor-content {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        
+        .floor-quote {
+            background: #fff;
+            border-left: 3px solid #007bff;
+            padding: 8px 10px;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .floor-time {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .editor-area {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .editor-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .editor-field {
+            flex: 1;
+        }
+        
+        .editor-field label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .editor-field input[type="text"],
+        .editor-field select,
+        .editor-field textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .editor-field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .editor-field input:focus,
+        .editor-field select:focus,
+        .editor-field textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-field input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .preview-panel {
+            position: sticky;
+            top: 20px;
+        }
+        
+        .preview-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .preview-tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .preview-tab.active {
+            background: #007bff;
+            color: white;
+        }
+        
+        .preview-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .preview-post {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .preview-floor {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .preview-op-tag {
+            background: #dc3545;
+            color: white;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
+        
+        .preview-quote {
+            background: #f5f5f5;
+            border-left: 4px solid #007bff;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .preview-quote-name {
+            color: #007bff;
+            font-weight: 600;
+        }
+        
+        .preview-post-content {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        
+        .preview-like {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .output-area {
+            margin-top: 20px;
+        }
+        
+        .output-area textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+        
+        .output-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .save-indicator.show {
+            opacity: 1;
+        }
+        
+        .clear-data-btn {
+            margin-top: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 论坛体编辑器 V1</h1>
+            <p>可视化编辑贴吧帖子，一键导出HTML</p>
+        </div>
+        
+        <div class="main-layout">
+            <div class="editor-panel">
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>📝 帖子信息</span>
+                    </div>
+                    
+                    <div class="editor-area">
+                        <div class="editor-row">
+                            <div class="editor-field">
+                                <label>帖子标题</label>
+                                <input type="text" id="threadTitle" placeholder="输入帖子标题...">
+                            </div>
+                        </div>
+                        
+                        <div class="editor-row">
+                            <div class="editor-field">
+                                <label>帖子正文（楼主首帖）</label>
+                                <textarea id="threadContent" placeholder="输入帖子正文..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-title" style="margin-top: 30px;">
+                        <span>📝 楼层编辑器</span>
+                        <button class="btn btn-primary" onclick="addNewFloor()">+ 新增楼层</button>
+                    </div>
+                    
+                    <div class="editor-area" id="editorArea">
+                        <div class="editor-row">
+                            <div class="editor-field">
+                                <label>楼层内容</label>
+                                <textarea id="floorContent" placeholder="输入楼层内容..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="editor-row">
+                            <div class="editor-field checkbox-field">
+                                <input type="checkbox" id="isOP">
+                                <label for="isOP">楼主身份</label>
+                            </div>
+                            
+                            <div class="editor-field">
+                                <label>回复楼层（可选）</label>
+                                <select id="replyTo" onchange="loadQuoteContent()">
+                                    <option value="">-- 不引用 --</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="quotePreview" style="display: none;">
+                            <div class="editor-field">
+                                <label>引用预览</label>
+                                <div class="floor-quote" id="quotePreviewContent"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="editor-row">
+                            <button class="btn btn-primary" onclick="saveFloor()">💾 保存楼层</button>
+                            <button class="btn btn-secondary" onclick="clearEditor()">🔄 清空编辑</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">📋 楼层列表</div>
+                    <div class="toolbar">
+                        <button class="btn btn-secondary btn-sm" onclick="renumberFloors()">🔢 重新编号</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAllFloors()">🗑️ 删除全部</button>
+                    </div>
+                    <div class="floor-list" id="floorList">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <p>暂无楼层，点击"新增楼层"开始编辑</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-panel">
+                <div class="panel">
+                    <div class="panel-title">👁️ 实时预览</div>
+                    
+                    <div class="preview-tabs">
+                        <button class="preview-tab active" onclick="switchTab('preview')">预览</button>
+                        <button class="preview-tab" onclick="switchTab('html')">HTML</button>
+                    </div>
+                    
+                    <div id="previewContent" class="preview-content">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">👀</div>
+                            <p>预览区域</p>
+                        </div>
+                    </div>
+                    
+                    <div id="htmlContent" class="output-area" style="display: none;">
+                        <textarea id="outputHTML" readonly placeholder="生成的HTML代码..."></textarea>
+                        <div class="output-actions">
+                            <button class="btn btn-success" onclick="copyHTML()">📋 一键复制</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success clear-data-btn" onclick="exportAll()">📥 导出完整HTML</button>
+                    <button class="btn btn-danger clear-data-btn" onclick="confirmClearData()">🗑️ 清除所有数据</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="save-indicator" id="saveIndicator">✓ 已保存</div>
+    
+    <script>
+        let threadTitle = '';
+        let threadContent = '';
+        let floors = [];
+        let editingId = null;
+        
+        function init() {
+            loadFromStorage();
+            document.getElementById('threadTitle').value = threadTitle;
+            document.getElementById('threadContent').value = threadContent;
+            updateFloorList();
+            updatePreview();
+            updateReplyOptions();
+            
+            // 自动保存帖子标题和正文
+            document.getElementById('threadTitle').addEventListener('input', function() {
+                threadTitle = this.value;
+                saveToStorage();
+                updatePreview();
+            });
+            
+            document.getElementById('threadContent').addEventListener('input', function() {
+                threadContent = this.value;
+                saveToStorage();
+                updatePreview();
+            });
+        }
+        
+        function addNewFloor() {
+            editingId = null;
+            clearEditor();
+            document.getElementById('floorContent').focus();
+        }
+        
+        function clearEditor() {
+            document.getElementById('floorContent').value = '';
+            document.getElementById('isOP').checked = false;
+            document.getElementById('replyTo').value = '';
+            document.getElementById('quotePreview').style.display = 'none';
+            editingId = null;
+        }
+        
+        function saveFloor() {
+            const content = document.getElementById('floorContent').value.trim();
+            if (!content) {
+                alert('请输入楼层内容');
+                return;
+            }
+            
+            const isOP = document.getElementById('isOP').checked;
+            const replyTo = document.getElementById('replyTo').value ? parseInt(document.getElementById('replyTo').value) : null;
+            
+            if (editingId !== null) {
+                floors[editingId] = {
+                    ...floors[editingId],
+                    content,
+                    isOP,
+                    replyTo
+                };
+            } else {
+                const newFloor = {
+                    id: Date.now(),
+                    floor: floors.length + 1,
+                    content,
+                    isOP,
+                    replyTo,
+                    time: new Date().toLocaleString()
+                };
+                floors.push(newFloor);
+            }
+            
+            clearEditor();
+            saveToStorage();
+            updateFloorList();
+            updatePreview();
+            updateReplyOptions();
+            showSaveIndicator();
+        }
+        
+        function editFloor(id) {
+            const floor = floors.find(f => f.id === id);
+            if (!floor) return;
+            
+            editingId = floors.indexOf(floor);
+            document.getElementById('floorContent').value = floor.content;
+            document.getElementById('isOP').checked = floor.isOP;
+            
+            if (floor.replyTo) {
+                document.getElementById('replyTo').value = floor.replyTo;
+                loadQuoteContent();
+            } else {
+                document.getElementById('replyTo').value = '';
+                document.getElementById('quotePreview').style.display = 'none';
+            }
+            
+            document.getElementById('floorContent').focus();
+        }
+        
+        function deleteFloor(id) {
+            if (!confirm('确定要删除这个楼层吗？')) return;
+            
+            floors = floors.filter(f => f.id !== id);
+            renumberFloors();
+            saveToStorage();
+            updateFloorList();
+            updatePreview();
+            updateReplyOptions();
+            showSaveIndicator();
+        }
+        
+        function deleteAllFloors() {
+            if (!confirm('确定要删除所有楼层吗？此操作不可恢复！')) return;
+            
+            floors = [];
+            saveToStorage();
+            updateFloorList();
+            updatePreview();
+            updateReplyOptions();
+            showSaveIndicator();
+        }
+        
+        function renumberFloors() {
+            floors.forEach((floor, index) => {
+                floor.floor = index + 1;
+            });
+            saveToStorage();
+            updateFloorList();
+            updatePreview();
+            showSaveIndicator();
+        }
+        
+        function loadQuoteContent() {
+            const replyTo = document.getElementById('replyTo').value;
+            const quotePreview = document.getElementById('quotePreview');
+            const quotePreviewContent = document.getElementById('quotePreviewContent');
+            
+            if (!replyTo) {
+                quotePreview.style.display = 'none';
+                return;
+            }
+            
+            const quotedFloor = floors.find(f => f.floor === parseInt(replyTo));
+            if (quotedFloor) {
+                quotePreviewContent.textContent = `${quotedFloor.floor}楼：${quotedFloor.content}`;
+                quotePreview.style.display = 'block';
+            }
+        }
+        
+        function updateFloorList() {
+            const list = document.getElementById('floorList');
+            
+            if (floors.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>暂无楼层，点击"新增楼层"开始编辑</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = floors.map((floor, index) => {
+                const badgeClass = floor.isOP ? 'badge-op' : 'badge-user';
+                const badgeText = floor.isOP ? '楼主' : '用户';
+                const itemClass = floor.replyTo ? 'reply' : (floor.isOP ? 'op' : '');
+                
+                return `
+                    <div class="floor-item ${itemClass}" onclick="editFloor(${floor.id})">
+                        <div class="floor-header">
+                            <div>
+                                <span class="floor-number">${floor.floor}楼</span>
+                                <span class="floor-badge ${badgeClass}">${badgeText}</span>
+                                ${floor.replyTo ? '<span class="floor-badge badge-reply">回复' + floor.replyTo + '楼</span>' : ''}
+                            </div>
+                            <div class="floor-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editFloor(${floor.id})">✏️</button>
+                                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteFloor(${floor.id})">🗑️</button>
+                            </div>
+                        </div>
+                        ${floor.replyTo ? `<div class="floor-quote">${floor.replyTo}楼：${getFloorContent(floor.replyTo)}</div>` : ''}
+                        <div class="floor-content">${floor.content}</div>
+                        <div class="floor-time">${floor.time}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getFloorContent(floorNum) {
+            const floor = floors.find(f => f.floor === floorNum);
+            return floor ? floor.content : '';
+        }
+        
+        function updateReplyOptions() {
+            const select = document.getElementById('replyTo');
+            select.innerHTML = '<option value="">-- 不引用 --</option>' + 
+                floors.map(f => `<option value="${f.floor}">${f.floor}楼</option>`).join('');
+        }
+        
+        function updatePreview() {
+            const previewContent = document.getElementById('previewContent');
+            const outputHTML = document.getElementById('outputHTML');
+            
+            // 生成完整的HTML结构
+            let html = '';
+            
+            if (threadTitle || threadContent || floors.length > 0) {
+                html = `<div class="forum-wrap">
+`;
+                
+                // thread-header
+                html += `  <div class="thread-header">
+    <div class="thread-title">${escapeHtml(threadTitle)}</div>
+    <div class="thread-content">${escapeHtml(threadContent)}</div>
+  </div>
+`;
+                
+                // reply-title
+                html += `  <div class="reply-title">回帖</div>
+`;
+                
+                // posts
+                floors.forEach(floor => {
+                    const opTag = floor.isOP ? '<span class="op-tag">楼主</span>' : '';
+                    const quoteHtml = floor.replyTo ? `
+    <div class="quote">
+      <span class="quote-name">${floor.replyTo}楼：</span>${escapeHtml(getFloorContent(floor.replyTo))}
+    </div>` : '';
+                    
+                    html += `  <div class="post">
+    <div class="floor">${floor.floor}楼 ${opTag}</div>${quoteHtml}
+    <div class="content">${escapeHtml(floor.content)}</div>
+    <div class="like">0</div>
+  </div>
+`;
+                });
+                
+                html += `</div>`;
+            }
+            
+            // 生成预览HTML（用于预览区域）
+            let previewHtml = '';
+            
+            if (threadTitle || threadContent || floors.length > 0) {
+                if (threadTitle || threadContent) {
+                    previewHtml += `<div class="preview-thread-header" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: 600; color: #333; margin-bottom: 10px;">${escapeHtml(threadTitle)}</div>
+                        <div style="font-size: 15px; color: #333; line-height: 1.8;">${escapeHtml(threadContent)}</div>
+                    </div>`;
+                }
+                
+                if (floors.length > 0) {
+                    previewHtml += `<div style="font-size: 16px; font-weight: 600; margin: 20px 0; padding-bottom: 10px; border-bottom: 2px solid #007bff;">回帖</div>`;
+                }
+                
+                floors.forEach(floor => {
+                    const opTag = floor.isOP ? '<span class="preview-op-tag">楼主</span>' : '';
+                    const quoteHtml = floor.replyTo ? `
+                    <div class="preview-quote">
+                        <span class="preview-quote-name">${floor.replyTo}楼：</span>${escapeHtml(getFloorContent(floor.replyTo))}
+                    </div>` : '';
+                    
+                    previewHtml += `<div class="preview-post">
+                    <div class="preview-floor">${floor.floor}楼 ${opTag}</div>${quoteHtml}
+                    <div class="preview-post-content">${escapeHtml(floor.content)}</div>
+                    <div class="preview-like">点赞: 0</div>
+                </div>`;
+                });
+            } else {
+                previewHtml = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👀</div>
+                        <p>预览区域</p>
+                    </div>
+                `;
+            }
+            
+            previewContent.innerHTML = previewHtml;
+            outputHTML.value = html;
+        }
+        
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.preview-tab');
+            const previewContent = document.getElementById('previewContent');
+            const htmlContent = document.getElementById('htmlContent');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'preview') {
+                previewContent.style.display = 'block';
+                htmlContent.style.display = 'none';
+            } else {
+                previewContent.style.display = 'none';
+                htmlContent.style.display = 'block';
+            }
+        }
+        
+        function copyHTML() {
+            const html = document.getElementById('outputHTML').value;
+            if (!html) {
+                alert('没有可复制的内容');
+                return;
+            }
+            
+            navigator.clipboard.writeText(html).then(() => {
+                showSaveIndicator('已复制到剪贴板');
+            }).catch(err => {
+                alert('复制失败，请手动复制');
+            });
+        }
+        
+        function exportAll() {
+            const html = generateFullHTML();
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '贴吧帖子.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function generateFullHTML() {
+            let postsHtml = '';
+            
+            floors.forEach(floor => {
+                const opTag = floor.isOP ? '<span class="op-tag">楼主</span>' : '';
+                const quoteHtml = floor.replyTo ? `
+      <div class="quote">
+        <span class="quote-name">${floor.replyTo}楼：</span>${escapeHtml(getFloorContent(floor.replyTo))}
+      </div>` : '';
+                
+                postsHtml += `    <div class="post">
+      <div class="floor">${floor.floor}楼 ${opTag}</div>${quoteHtml}
+      <div class="content">${escapeHtml(floor.content)}</div>
+      <div class="like">0</div>
+    </div>
+`;
+            });
+            
+            return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(threadTitle) || '贴吧帖子'}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Microsoft YaHei', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    .forum-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .thread-header {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .thread-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    .thread-content {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.8;
+    }
+    .reply-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #007bff;
+    }
+    .post {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    .floor {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    .op-tag {
+      background: #dc3545;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      font-weight: normal;
+    }
+    .quote {
+      background: #f5f5f5;
+      border-left: 4px solid #007bff;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #666;
+    }
+    .quote-name {
+      color: #007bff;
+      font-weight: 600;
+    }
+    .content {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+    .like {
+      color: #999;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="forum-wrap">
+    <div class="thread-header">
+      <div class="thread-title">${escapeHtml(threadTitle)}</div>
+      <div class="thread-content">${escapeHtml(threadContent)}</div>
+    </div>
+    <div class="reply-title">回帖</div>
+${postsHtml}  </div>
+</body>
+</html>`;
+        }
+        
+        function saveToStorage() {
+            const data = {
+                threadTitle: threadTitle,
+                threadContent: threadContent,
+                floors: floors
+            };
+            localStorage.setItem('tiebaEditorData', JSON.stringify(data));
+        }
+        
+        function loadFromStorage() {
+            const saved = localStorage.getItem('tiebaEditorData');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    threadTitle = data.threadTitle || '';
+                    threadContent = data.threadContent || '';
+                    floors = data.floors || [];
+                } catch (e) {
+                    threadTitle = '';
+                    threadContent = '';
+                    floors = [];
+                }
+            }
+        }
+        
+        function confirmClearData() {
+            if (!confirm('确定要清除所有数据吗？这将删除所有楼层和草稿！')) return;
+            clearData();
+        }
+        
+        function clearData() {
+            threadTitle = '';
+            threadContent = '';
+            floors = [];
+            localStorage.removeItem('tiebaEditorData');
+            document.getElementById('threadTitle').value = '';
+            document.getElementById('threadContent').value = '';
+            clearEditor();
+            updateFloorList();
+            updatePreview();
+            updateReplyOptions();
+            showSaveIndicator('数据已清除');
+        }
+        
+        function showSaveIndicator(message = '已保存') {
+            const indicator = document.getElementById('saveIndicator');
+            indicator.textContent = '✓ ' + message;
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        init();
+    </script>
+</body>
+</html>
